@@ -1,0 +1,6 @@
+.ipynb_checkpoints
+.virtual_documents
+playgrounds
+venv
+.DS_Store
+node_modules

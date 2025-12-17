@@ -1,0 +1,9 @@
+.tile-img {
+  position: absolute;
+  user-select: none;
+}
+
+.number-img {
+  position: absolute;
+  user-select: none;
+}

@@ -1,0 +1,28 @@
+.board {
+  width: min(90vw, 80vh);
+  height: min(90vw, 80vh);
+  position: relative;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.step-text {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.error-text {
+  color: white;
+  margin-bottom: 1rem;
+}

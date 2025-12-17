@@ -1,0 +1,769 @@
+---
+title: "Catan-Exploration"
+output:
+  pdf_document: default
+  html_document: default
+date: "2025-12-16"
+---
+
+```{r setup, include=F}
+knitr::opts_chunk$set(error=TRUE)
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+# Catan Exploration
+
+by Ryan Fernandes
+
+## Import Data
+
+```{r}
+data <- read.csv("catan-results.csv")
+data$X <- NULL
+```
+
+Check data format
+
+```{r}
+head(data, 2)
+```
+
+## Plots
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(ts1),
+    "2 - Blue" = mean(ts2),
+    "3 - Green" = mean(ts3),
+    "4 - Orange" = mean(ts4)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Score",
+    title = "Average Score Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(tm1),
+    "2 - Blue" = mean(tm2),
+    "3 - Green" = mean(tm3),
+    "4 - Orange" = mean(tm4)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = -2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Distance",
+    title = "Average Distance to Maximum Score Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  mutate(
+    "p1_win" = as.integer(tm1 > 0),
+    "p2_win" = as.integer(tm2 > 0),
+    "p3_win" = as.integer(tm3 > 0),
+    "p4_win" = as.integer(tm1 > 0),
+    "tie" = as.integer(1 - p1_win - p2_win - p3_win - p4_win)
+  ) |>
+  summarize(
+    "1 - Red" = mean(p1_win),
+    "2 - Blue" = mean(p2_win),
+    "3 - Green" = mean(p3_win),
+    "4 - Orange" = mean(p4_win),
+    "Tie" = mean(tie)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "percent"
+  ) |>
+  ggplot(aes(x = player, y = percent, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(percent, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928",
+    "Tie" = "#e85dba"
+  )) +
+  labs(
+    x = "Draft Winner",
+    y = "Percent of Simulated Drafts",
+    title = "Percent of Drafts Won Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(tm1[tm1 > 0]),
+    "2 - Blue" = mean(tm2[tm2 > 0]),
+    "3 - Green" = mean(tm3[tm3 > 0]),
+    "4 - Orange" = mean(tm4[tm4 > 0])
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Margin in Victories",
+    title = "Average Margin in Victories Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(tm1[tm1 < 0]),
+    "2 - Blue" = mean(tm2[tm2 < 0]),
+    "3 - Green" = mean(tm3[tm3 < 0]),
+    "4 - Orange" = mean(tm4[tm4 < 0])
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = -2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Deficit in Losses",
+    title = "Average Deficit in Losses Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  mutate(
+    "tie" = as.integer((tm1 == 0) | (tm2 == 0) | (tm3 == 0) | (tm4 == 0)),
+    "p1_tie" = as.integer(tm1 == 0),
+    "p2_tie" = as.integer(tm2 == 0),
+    "p3_tie" = as.integer(tm3 == 0),
+    "p4_tie" = as.integer(tm4 == 0),
+  ) |>
+  filter(
+    tie == 1
+  ) |>
+  summarize(
+    "1 - Red" = mean(p1_tie),
+    "2 - Blue" = mean(p2_tie),
+    "3 - Green" = mean(p3_tie),
+    "4 - Orange" = mean(p3_tie)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Tie Share",
+    title = "Tie Share Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  pivot_longer(
+    cols = c(str1, str2, str3, str4),
+    names_to = "player",
+    values_to = "strategy"
+  ) |>
+  group_by(player) |>
+  summarize(
+    "All Resources" = mean(strategy == 0),
+    "Road Builder" = mean(strategy == 1),
+    "City Builder" = mean(strategy == 2)
+  ) |>
+  pivot_longer(
+    cols = c("All Resources", "Road Builder", "City Builder"),
+    names_to = "strategy",
+    values_to = "percent"
+  ) |>
+  mutate(
+    player_names = recode(
+      player,
+      "str1" = "Player 1 - Red",
+      "str2" = "Player 2 - Blue",
+      "str3" = "Player 3 - Green",
+      "str4" = "Player 4 - Orange"
+    )
+  ) |>
+  ggplot(aes(x = strategy, y = percent, fill = strategy)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(percent, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "All Resources" = "#4477ad",
+    "Road Builder" = "#274463",
+    "City Builder" = "#5ea6f2"
+  )) +
+  labs(
+    x = "Strategy Used",
+    y = "Percent of Games",
+    title = "Strategy Used Based on Draft Position"
+  ) +
+  guides(fill = "none") + 
+  facet_wrap(
+    facets = c("player_names")
+  )
+```
+
+```{r}
+data |>
+  pivot_longer(
+    cols = c(pr1, pr2, pr3, pr4, pr5, pr6, pr7, pr8),
+    names_to = "turn_name",
+    values_to = "pip_rank"
+  ) |>
+  mutate(
+    turn = recode(
+      turn_name,
+      "pr1" = "Turn 1",
+      "pr2" = "Turn 2",
+      "pr3" = "Turn 3",
+      "pr4" = "Turn 4",
+      "pr5" = "Turn 5",
+      "pr6" = "Turn 6",
+      "pr7" = "Turn 7",
+      "pr8" = "Turn 8"
+    )
+  ) |>
+  group_by(
+    turn
+  ) |>
+  summarize(
+    "1st" = mean(pip_rank == 1),
+    "2nd" = mean(pip_rank == 2),
+    "3rd" = mean(pip_rank == 3),
+    "4th" = mean(pip_rank == 4)
+  ) |>
+  pivot_longer(
+    cols = c("1st", "2nd", "3rd", "4th"),
+    names_to = "rank",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = rank, y = mean, fill = mean)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 1.75,
+    size = 2.25,
+    color = "white",
+  ) +
+  labs(
+    x = "Initial Location Rank (Total Pips)",
+    y = "Percent of Times Selected",
+    title = "Initial Rank of Selected Locations Based on Turn"
+  ) +
+  guides(fill = "none") + 
+  facet_wrap(
+    facets = c("turn"),
+    ncol = 4
+  )
+```
+
+```{r}
+data |>
+  pivot_longer(
+    cols = c(s1, s2, s3, s4, s5, s6, s7, s8),
+    names_to = "turn_name",
+    values_to = "vertex"
+  ) |>
+  mutate(
+    turn = recode(
+      turn_name,
+      "s1" = "Turn 1",
+      "s2" = "Turn 2",
+      "s3" = "Turn 3",
+      "s4" = "Turn 4",
+      "s5" = "Turn 5",
+      "s6" = "Turn 6",
+      "s7" = "Turn 7",
+      "s8" = "Turn 8"
+    ),
+    ring_idx = case_when(
+      vertex <= 29 ~ 0,
+      vertex > 29 & vertex <= 47 ~ 1,
+      vertex > 47 ~ 2
+    )
+  ) |>
+  group_by(
+    turn
+  ) |>
+  summarize(
+    "Outer" = mean(ring_idx == 0),
+    "Middle" = mean(ring_idx == 1),
+    "Inner" = mean(ring_idx == 2)
+  ) |>
+  pivot_longer(
+    cols = c("Outer", "Middle", "Inner"),
+    names_to = "ring",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = ring, y = mean, fill = mean)) +
+  geom_col() +
+  geom_text(
+    aes(label = ifelse(mean > 0.10, round(mean, 2), "")),
+    vjust = 1.75,
+    size = 2.25,
+    color = "white",
+  ) +
+  labs(
+    x = "Board Ring",
+    y = "Percent of Selections",
+    title = "Percentage of Selections Made in Each Board Ring Based on Turn"
+  ) +
+  guides(fill = "none") + 
+  facet_wrap(
+    facets = c("turn"),
+    ncol = 4
+  )
+```
+
+```{r}
+data |>
+  mutate(
+    "p1_win" = as.integer(tm1 > 0),
+    "p2_win" = as.integer(tm2 > 0),
+    "p3_win" = as.integer(tm3 > 0),
+    "p4_win" = as.integer(tm1 > 0),
+    "tie" = as.integer(1 - p1_win - p2_win - p3_win - p4_win),
+    "desert_ring" = case_when(
+      dl <= 11 ~ "Desert - Outer",
+      dl > 11 & dl <= 17 ~ "Desert - Middle",
+      dl > 17 ~ "Desert - Inner"
+    )
+  ) |>
+  group_by(desert_ring) |>
+  summarize(
+    "1 - Red" = mean(p1_win),
+    "2 - Blue" = mean(p2_win),
+    "3 - Green" = mean(p3_win),
+    "4 - Orange" = mean(p4_win),
+    "Tie" = mean(tie)
+  ) |>
+  pivot_longer(
+    cols = c("1 - Red", "2 - Blue", "3 - Green", "4 - Orange", "Tie"),
+    names_to = "player",
+    values_to = "percent"
+  ) |>
+  ggplot(aes(x = player, y = percent, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = ifelse(percent >= 0.09, round(percent, 2), "")),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928",
+    "Tie" = "#e85dba"
+  )) +
+  labs(
+    x = "Draft Winner",
+    y = "Percent of Simulated Drafts",
+    title = "Percent of Drafts Won Based on Draft Position and Desert Location"
+  ) +
+  guides(fill = "none") +
+  facet_wrap(
+    facets = c("desert_ring"),
+    ncol = 1
+  )
+```
+
+```{r}
+data |>
+  mutate(
+    "desert_ring" = case_when(
+      dl <= 11 ~ "Desert - Outer",
+      dl > 11 & dl <= 17 ~ "Desert - Middle",
+      dl > 17 ~ "Desert - Inner"
+    )
+  ) |>
+  group_by(desert_ring) |>
+  summarize(
+    "1 - Red" = mean(ts1),
+    "2 - Blue" = mean(ts2),
+    "3 - Green" = mean(ts3),
+    "4 - Orange" = mean(ts4)
+  ) |>
+  pivot_longer(
+    cols = c("1 - Red", "2 - Blue", "3 - Green", "4 - Orange"),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Score",
+    title = "Average Score Based on Draft Position"
+  ) +
+  guides(fill = "none") +
+  facet_wrap(
+    facets = c("desert_ring"),
+    ncol = 1
+  )
+```
+
+```{r}
+data |>
+  pivot_longer(
+    cols = c("wood1", "wood2", "wood3", "wood4"),
+    names_to = "wood_player",
+    values_to = "wood",
+  ) |>
+  mutate(
+    wood_player = recode(
+      wood_player,
+      "wood1" = 1,
+      "wood2" = 2,
+      "wood3" = 3,
+      "wood4" = 4
+    )
+  ) |>
+  pivot_longer(
+    cols = c("brick1", "brick2", "brick3", "brick4"),
+    names_to = "brick_player",
+    values_to = "brick",
+  ) |>
+  mutate(
+    brick_player = recode(
+      brick_player,
+      "brick1" = 1,
+      "brick2" = 2,
+      "brick3" = 3,
+      "brick4" = 4
+    )
+  ) |>
+  pivot_longer(
+    cols = c("wheat1", "wheat2", "wheat3", "wheat4"),
+    names_to = "wheat_player",
+    values_to = "wheat",
+  ) |>
+  mutate(
+    wheat_player = recode(
+      wheat_player,
+      "wheat1" = 1,
+      "wheat2" = 2,
+      "wheat3" = 3,
+      "wheat4" = 4
+    )
+  ) |>
+  pivot_longer(
+    cols = c("sheep1", "sheep2", "sheep3", "sheep4"),
+    names_to = "sheep_player",
+    values_to = "sheep",
+  ) |>
+  mutate(
+    sheep_player = recode(
+      sheep_player,
+      "sheep1" = 1,
+      "sheep2" = 2,
+      "sheep3" = 3,
+      "sheep4" = 4
+    )
+  ) |>
+  pivot_longer(
+    cols = c("ore1", "ore2", "ore3", "ore4"),
+    names_to = "ore_player",
+    values_to = "ore",
+  ) |>
+  mutate(
+    ore_player = recode(
+      ore_player,
+      "ore1" = 1,
+      "ore2" = 2,
+      "ore3" = 3,
+      "ore4" = 4
+    )
+  ) |>
+  filter(
+    wood_player == brick_player, brick_player == wheat_player, wheat_player == sheep_player, sheep_player == ore_player
+  ) |>
+  mutate(
+    player = recode(
+      wood_player,
+      "1" = "1 - Red",
+      "2" = "2 - Blue",
+      "3" = "3 - Green",
+      "4" = "4 - Orange"
+    )
+  ) |>
+  group_by(
+    player
+  ) |>
+  summarize(
+    mean_wood = mean(wood),
+    mean_brick = mean(brick),
+    mean_wheat = mean(wheat),
+    mean_sheep = mean(sheep),
+    mean_ore = mean(ore)
+  ) |>
+  pivot_longer(
+    cols = c("mean_wood", "mean_brick", "mean_wheat", "mean_sheep", "mean_ore"),
+    names_to = "resource_name",
+    values_to = "mean"
+  ) |>
+  mutate(
+    resource = recode(
+      resource_name,
+      "mean_wood" = "Wood",
+      "mean_brick" = "Brick",
+      "mean_wheat" = "Wheat",
+      "mean_sheep" = "Sheep",
+      "mean_ore" = "Ore"
+    )
+  ) |>
+  ggplot(aes(x = resource, y = mean, fill = resource)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "Wood" = "#522f22",
+    "Brick" = "#ad3a10",
+    "Wheat" = "#b7cf06",
+    "Sheep" = "#29cf17",
+    "Ore" = "#919191"
+  )) +
+  labs(
+    x = "Resource",
+    y = "Average Production Amount",
+    title = "Average Production of Each Resource Based on Draft Position"
+  ) +
+  guides(fill = "none") +
+  facet_wrap(
+    facets = c("player"),
+    ncol = 1
+  )
+  
+```
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(pros1),
+    "2 - Blue" = mean(pros2),
+    "3 - Green" = mean(pros3),
+    "4 - Orange" = mean(pros4)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Prospects Score",
+    title = "Average Prospects Score Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(pip1),
+    "2 - Blue" = mean(pip2),
+    "3 - Green" = mean(pip3),
+    "4 - Orange" = mean(pip4)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Production Score (Pips)",
+    title = "Average Production Score Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
+
+```{r}
+data |>
+  summarize(
+    "1 - Red" = mean(pf1),
+    "2 - Blue" = mean(pf2),
+    "3 - Green" = mean(pf3),
+    "4 - Orange" = mean(pf4)
+  ) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "player",
+    values_to = "mean"
+  ) |>
+  ggplot(aes(x = player, y = mean, fill = player)) +
+  geom_col() +
+  geom_text(
+    aes(label = round(mean, 2)),
+    vjust = 2,
+    size = 3.25,
+    color = "white",
+  ) +
+  scale_fill_manual(values = c(
+    "1 - Red" = "#e71313",
+    "2 - Blue" = "#3126ae",
+    "3 - Green" = "#1f852f",
+    "4 - Orange" = "#f78928"
+  )) +
+  labs(
+    x = "Player",
+    y = "Average Strategy Score",
+    title = "Average Strategy Score Based on Draft Position"
+  ) +
+  guides(fill = "none")
+```
